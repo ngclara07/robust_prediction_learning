@@ -385,3 +385,77 @@ def test_bpr_recommender_excludes_seen_items():
     assert 1 not in recommendations
 
     assert len(recommendations) == 3
+
+
+from robust_prediction_learning.shift import (
+    event_mass_at_k,
+    jensen_shannon_divergence,
+    jensen_shannon_from_counts,
+    make_equal_interaction_windows,
+)
+
+
+def test_js_identical_distributions_is_zero():
+    p = [0.2, 0.3, 0.5]
+
+    assert jensen_shannon_divergence(
+        p,
+        p,
+    ) == pytest.approx(0.0)
+
+
+def test_js_is_symmetric():
+    p = [0.8, 0.2]
+    q = [0.1, 0.9]
+
+    assert jensen_shannon_divergence(
+        p,
+        q,
+    ) == pytest.approx(
+        jensen_shannon_divergence(
+            q,
+            p,
+        )
+    )
+
+
+def test_js_disjoint_distributions_is_one():
+    p = [1.0, 0.0]
+    q = [0.0, 1.0]
+
+    assert jensen_shannon_divergence(
+        p,
+        q,
+        base=2.0,
+    ) == pytest.approx(1.0)
+
+
+def test_sparse_js_matches_dense_js():
+    sparse = jensen_shannon_from_counts(
+        {1: 3, 2: 1},
+        {2: 1, 3: 3},
+    )
+
+    dense = jensen_shannon_divergence(
+        [3, 1, 0],
+        [0, 1, 3],
+    )
+
+    assert sparse == pytest.approx(
+        dense
+    )
+
+
+def test_event_mass_at_k():
+    counts = {
+        1: 8,
+        2: 2,
+    }
+
+    recommendations = [1, 3]
+
+    assert event_mass_at_k(
+        recommendations,
+        counts,
+        k=2,
+    ) == pytest.approx(0.8)

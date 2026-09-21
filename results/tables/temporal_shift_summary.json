@@ -1,0 +1,23 @@
+{
+  "window_size": 250,
+  "minimum_windows_per_user": 3,
+  "ranking_k": 20,
+  "analyzed_users": 595,
+  "analyzed_windows": 6642,
+  "mean_js_to_history_known": 0.6423891334869222,
+  "median_js_to_history_known": 0.6629897752603446,
+  "mean_bpr_event_mass_known": 0.06365297699690552,
+  "mean_bpr_ndcg": 0.16219381653041448,
+  "mean_user_novel_event_fraction": 0.14063956639566397,
+  "mean_global_cold_start_fraction": 0.010296296296296295,
+  "overall_spearman_shift_vs_bpr_mass": -0.35937065049447814,
+  "overall_spearman_p_value": 1.1254572800740223e-201,
+  "overall_pearson_shift_vs_bpr_mass": -0.13226802638430685,
+  "overall_pearson_p_value": 2.6149855195189692e-27,
+  "overall_spearman_shift_vs_bpr_ndcg": -0.4837220728548886,
+  "overall_spearman_ndcg_p_value": 0.0,
+  "users_with_valid_within_user_correlation": 562,
+  "median_user_spearman_rho": -0.2520838448710454,
+  "mean_user_spearman_rho": -0.19713251789826544,
+  "fraction_users_negative_correlation": 0.701067615658363
+}
