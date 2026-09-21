@@ -105,7 +105,7 @@ The proposed candidate algorithm adjusts historical trust according to:
 
 Its historical weight is
 
-$$
+```math
 \alpha_t
 =
 \sigma\left(
@@ -115,7 +115,7 @@ $$
 -
 \gamma_d d_t
 \right).
-$$
+```
 
 The method performs substantially better than relying exclusively on
 the historical BPR predictor, but it does not outperform Hedge or
@@ -394,12 +394,12 @@ python experiments/03_temporal_shift.py --window-size 500
 
 The primary shift measure is:
 
-$$
+```math
 \operatorname{JS}\left(
 P_u^{\mathrm{history}},
 P_{u,t}^{\mathrm{future}}
 \right).
-$$
+```
 
 Equal-interaction windows are used instead of fixed calendar windows to
 reduce confounding from dataset-level observation density changes.
@@ -476,7 +476,7 @@ results/figures/performance_by_shift.png
 Recall@K measures the fraction of relevant items recovered in the
 top-\(K\) recommendation set:
 
-$$
+```math
 \operatorname{Recall@K}
 =
 \frac{
@@ -490,7 +490,7 @@ $$
 \mathrm{relevant}
 \right|
 }.
-$$
+```
 
 ## NDCG@K
 
@@ -502,9 +502,9 @@ the top of the ranked list.
 
 For sequential music consumption, repeated listening events are
 meaningful. EventMass@K measures the fraction of future listening
-activity covered by the recommended top-$K$ artists:
+activity covered by the recommended top-\(K\) artists:
 
-$$
+```math
 \operatorname{EventMass@K}
 =
 \frac{
@@ -512,7 +512,7 @@ $$
 }{
 \sum_j n(j)
 }.
-$$
+```
 
 Here, $R_K$ denotes the top-$K$ recommendation set, and $n(i)$ denotes
 the number of future listening events associated with item $i$.
@@ -521,13 +521,13 @@ the number of future listening events associated with item $i$.
 
 For an expert, sequential loss is defined as:
 
-$$
+```math
 \ell_t
 =
 1
 -
 \operatorname{EventMass@K}_t.
-$$
+```
 
 Thus, lower loss corresponds to greater coverage of the user's future
 listening behavior.
