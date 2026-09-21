@@ -109,13 +109,22 @@ Its historical weight is
 \alpha_t
 =
 \sigma\left(
-\operatorname{logit}(\alpha_0)
+\mathrm{logit}(\alpha_0)
 -
 \gamma_s s_t
 -
 \gamma_d d_t
 \right).
 ```
+
+Here:
+
+- $\alpha_t$ is the weight assigned to the historical predictor;
+- $\alpha_0$ is its baseline historical trust;
+- $s_t$ is the behavioral-shift signal;
+- $d_t$ is the exponentially smoothed historical disadvantage;
+- $\gamma_s$ controls sensitivity to behavioral shift; and
+- $\gamma_d$ controls sensitivity to relative predictive loss.
 
 The method performs substantially better than relying exclusively on
 the historical BPR predictor, but it does not outperform Hedge or
@@ -128,7 +137,7 @@ toward zero.
 
 This negative result is retained deliberately. It shows that:
 
-> **detecting behavioral shift and responding optimally to behavioral
+> **Detecting behavioral shift and responding optimally to behavioral
 > shift are separate algorithmic problems.**
 
 ---
@@ -140,7 +149,7 @@ collected by Òscar Celma.
 
 Dataset reference:
 
-> Òscar Celma. Last.fm Music Recommendation Dataset, version 1.2.
+> Òscar Celma. *Last.fm Music Recommendation Dataset*, version 1.2.  
 > DOI: `10.5281/zenodo.6090214`.
 
 The original dataset is made available for non-commercial research use.
@@ -395,14 +404,21 @@ python experiments/03_temporal_shift.py --window-size 500
 The primary shift measure is:
 
 ```math
-\operatorname{JS}\left(
+\mathrm{JS}\left(
 P_u^{\mathrm{history}},
 P_{u,t}^{\mathrm{future}}
 \right).
 ```
 
+Here:
+
+- $P_u^{\mathrm{history}}$ denotes user $u$'s historical artist
+  distribution; and
+- $P_{u,t}^{\mathrm{future}}$ denotes the artist distribution in future
+  interaction window $t$.
+
 Equal-interaction windows are used instead of fixed calendar windows to
-reduce confounding from dataset-level observation density changes.
+reduce confounding from dataset-level observation-density changes.
 
 Principal outputs:
 
@@ -473,39 +489,59 @@ results/figures/performance_by_shift.png
 
 ## Recall@K
 
-Recall@K measures the fraction of relevant items recovered in the
-top-\(K\) recommendation set:
+Recall@K measures the fraction of relevant future items recovered in the
+top-$K$ recommendation set.
 
 ```math
-\operatorname{Recall@K}
+\mathrm{Recall}@K
 =
 \frac{
-\left|
-\mathrm{recommended}_{K}
-\cap
-\mathrm{relevant}
-\right|
+\left|R_K \cap G\right|
 }{
-\left|
-\mathrm{relevant}
-\right|
+\left|G\right|
 }.
 ```
 
+Here:
+
+- $R_K$ is the top-$K$ recommendation set; and
+- $G$ is the set of relevant future items.
+
+---
+
 ## NDCG@K
 
-Binary-relevance normalized discounted cumulative gain is used to
-measure ranking quality while rewarding relevant items that occur near
-the top of the ranked list.
+Binary-relevance normalized discounted cumulative gain measures ranking
+quality while rewarding relevant items that occur closer to the top of
+the ranked recommendation list.
+
+Discounted cumulative gain is defined as:
+
+```math
+\mathrm{DCG}@K
+=
+\sum_{r=1}^{K}
+\frac{
+\mathrm{rel}_r
+}{
+\log_2(r+1)
+}.
+```
+
+NDCG@K is obtained by dividing DCG@K by the corresponding ideal DCG.
+
+---
 
 ## EventMass@K
 
 For sequential music consumption, repeated listening events are
-meaningful. EventMass@K measures the fraction of future listening
-activity covered by the recommended top-\(K\) artists:
+meaningful.
+
+EventMass@K measures the fraction of future listening activity covered
+by the recommended top-$K$ artists.
 
 ```math
-\operatorname{EventMass@K}
+\mathrm{EventMass}@K
 =
 \frac{
 \sum_{i \in R_K} n(i)
@@ -514,28 +550,198 @@ activity covered by the recommended top-\(K\) artists:
 }.
 ```
 
-Here, $R_K$ denotes the top-$K$ recommendation set, and $n(i)$ denotes
-the number of future listening events associated with item $i$.
+Here:
+
+- $R_K$ denotes the top-$K$ recommendation set; and
+- $n(i)$ denotes the number of future listening events associated with
+  item $i$.
+
+Unlike binary Recall@K, EventMass@K preserves repeated consumption.
+
+---
 
 ## Sequential loss
 
-For an expert, sequential loss is defined as:
+For expert $e$, sequential loss at interaction window $t$ is defined as:
+
+```math
+\ell_{e,t}
+=
+1
+-
+\mathrm{EventMass}_{e,t}@K.
+```
+
+Therefore:
+
+```math
+0
+\le
+\ell_{e,t}
+\le
+1.
+```
+
+Lower loss corresponds to greater coverage of the user's future
+listening activity.
+
+---
+
+## Mixture loss
+
+For historical-predictor weight $\alpha_t$, expected mixture loss is:
 
 ```math
 \ell_t
 =
-1
--
-\operatorname{EventMass@K}_t.
+\alpha_t \ell_{H,t}
++
+(1-\alpha_t)\ell_{O,t}.
 ```
 
-Thus, lower loss corresponds to greater coverage of the user's future
-listening behavior.
+Here:
+
+- $\ell_{H,t}$ is the historical predictor's loss;
+- $\ell_{O,t}$ is the online predictor's loss; and
+- $\alpha_t$ determines how strongly the historical prediction is
+  trusted.
+
+---
 
 ## Regret
 
-The robust-learning experiment also measures cumulative loss relative
-to the better fixed expert.
+Cumulative loss through time $T$ is:
+
+```math
+L_T
+=
+\sum_{t=1}^{T}
+\ell_t.
+```
+
+Regret is measured relative to the better fixed expert:
+
+```math
+R_T
+=
+L_T
+-
+\min
+\left\{
+L_T^{H},
+L_T^{O}
+\right\}.
+```
+
+Lower regret indicates that the sequential combination strategy remains
+closer to the better fixed expert.
+
+---
+
+# Robust-learning methods
+
+## Prediction Only
+
+The historical predictor is trusted completely:
+
+```math
+\alpha_t = 1.
+```
+
+---
+
+## Online Only
+
+The historical predictor is ignored:
+
+```math
+\alpha_t = 0.
+```
+
+---
+
+## Static Mixture
+
+A fixed historical weight is used throughout the sequential stream:
+
+```math
+\alpha_t = \alpha.
+```
+
+The value of $\alpha$ is selected using validation data.
+
+---
+
+## Hedge
+
+Historical BPR and the adaptive online model are treated as two experts.
+
+Their weights are updated according to observed losses:
+
+```math
+w_{i,t+1}
+=
+w_{i,t}
+\exp\left(
+-\eta\ell_{i,t}
+\right).
+```
+
+The historical expert's normalized weight is:
+
+```math
+\alpha_t
+=
+\frac{
+w_{H,t}
+}{
+w_{H,t}+w_{O,t}
+}.
+```
+
+The learning rate $\eta$ is selected using validation data.
+
+---
+
+## Shift-Aware Adaptive Trust
+
+The proposed candidate mechanism uses both behavioral shift and recent
+relative expert performance.
+
+The exponentially smoothed historical disadvantage is:
+
+```math
+d_t
+=
+(1-\beta)d_{t-1}
++
+\beta
+\left(
+\ell_{H,t}
+-
+\ell_{O,t}
+\right).
+```
+
+Historical trust is determined by:
+
+```math
+\alpha_t
+=
+\sigma\left(
+\mathrm{logit}(\alpha_0)
+-
+\gamma_s s_t
+-
+\gamma_d d_{t-1}
+\right).
+```
+
+The method therefore reduces historical trust when either:
+
+- behavioral divergence increases; or
+- the historical predictor has recently performed worse than the online
+  expert.
 
 ---
 
@@ -543,18 +749,24 @@ to the better fixed expert.
 
 Several methodological constraints are enforced throughout the study.
 
-### Chronological evaluation
+## Chronological evaluation
 
 Future interactions are never randomly mixed into historical training
 data.
 
-### Validation-only hyperparameter selection
+---
+
+## Validation-only hyperparameter selection
 
 BPR and robust-learning parameters are selected using validation data.
 
-### No current-window look-ahead
+The held-out chronological test stream is reserved for final evaluation.
 
-During robust sequential evaluation:
+---
+
+## No current-window look-ahead
+
+During robust sequential evaluation, each interaction window follows:
 
 ```text
 predict
@@ -567,11 +779,15 @@ predict
 The current window is therefore not used before its prediction is
 evaluated.
 
-### User-level shift analysis
+---
+
+## User-level shift analysis
 
 Pooled temporal windows are not treated as independent observations for
-the main interpretation. Per-user Spearman correlations are computed to
-account for repeated windows from the same listener.
+the main interpretation.
+
+Per-user Spearman correlations are computed to account for repeated
+windows belonging to the same listener.
 
 ---
 
@@ -625,7 +841,7 @@ cd paper
 latexmk -pdf main.tex
 ```
 
-The generated PDF should remain local or be added to the repository only
+The generated PDF can be retained locally or committed to the repository
 if desired.
 
 ---
