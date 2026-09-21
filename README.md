@@ -105,7 +105,7 @@ The proposed candidate algorithm adjusts historical trust according to:
 
 Its historical weight is
 
-\[
+$$
 \alpha_t
 =
 \sigma\left(
@@ -115,7 +115,7 @@ Its historical weight is
 -
 \gamma_d d_t
 \right).
-\]
+$$
 
 The method performs substantially better than relying exclusively on
 the historical BPR predictor, but it does not outperform Hedge or
@@ -394,9 +394,12 @@ python experiments/03_temporal_shift.py --window-size 500
 
 The primary shift measure is:
 
-\[
-JS(P_u^{history}, P_{u,t}^{future}).
-\]
+$$
+\operatorname{JS}\left(
+P_u^{\mathrm{history}},
+P_{u,t}^{\mathrm{future}}
+\right).
+$$
 
 Equal-interaction windows are used instead of fixed calendar windows to
 reduce confounding from dataset-level observation density changes.
@@ -470,54 +473,69 @@ results/figures/performance_by_shift.png
 
 ## Recall@K
 
-\[
+Recall@K measures the fraction of relevant items recovered in the
+top-\(K\) recommendation set:
+
+$$
 \operatorname{Recall@K}
 =
 \frac{
-|\text{recommended}_{K}
+\left|
+\mathrm{recommended}_{K}
 \cap
-\text{relevant}|
+\mathrm{relevant}
+\right|
 }{
-|\text{relevant}|
+\left|
+\mathrm{relevant}
+\right|
 }.
-\]
+$$
 
 ## NDCG@K
 
 Binary-relevance normalized discounted cumulative gain is used to
-measure ranking quality.
+measure ranking quality while rewarding relevant items that occur near
+the top of the ranked list.
 
 ## EventMass@K
 
 For sequential music consumption, repeated listening events are
-meaningful. EventMass@K therefore measures:
+meaningful. EventMass@K measures the fraction of future listening
+activity covered by the recommended top-$K$ artists:
 
-\[
+$$
 \operatorname{EventMass@K}
 =
 \frac{
-\text{future listening events covered by the top-K artists}
+\sum_{i \in R_K} n(i)
 }{
-\text{all future listening events}
+\sum_j n(j)
 }.
-\]
+$$
+
+Here, $R_K$ denotes the top-$K$ recommendation set, and $n(i)$ denotes
+the number of future listening events associated with item $i$.
 
 ## Sequential loss
 
-For an expert:
+For an expert, sequential loss is defined as:
 
-\[
+$$
 \ell_t
 =
 1
 -
 \operatorname{EventMass@K}_t.
-\]
+$$
+
+Thus, lower loss corresponds to greater coverage of the user's future
+listening behavior.
 
 ## Regret
 
-The robust-learning experiment also measures cumulative loss relative to
-the better fixed expert.
+The robust-learning experiment also measures cumulative loss relative
+to the better fixed expert.
 
 ---
 
