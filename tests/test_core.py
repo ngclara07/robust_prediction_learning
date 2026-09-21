@@ -20,6 +20,13 @@ from robust_prediction_learning.recommenders import (
     BPRRecommender,
     PopularityRecommender,
 )
+from robust_prediction_learning.algorithms import (
+    ExponentialDecayOnlineExpert,
+    Hedge,
+    ShiftAwareAdaptiveTrust,
+    StaticMixture,
+    expected_mixture_loss,
+)
 
 
 # ============================================================
@@ -459,3 +466,136 @@ def test_event_mass_at_k():
         counts,
         k=2,
     ) == pytest.approx(0.8)
+
+
+def test_expected_mixture_loss():
+    result = expected_mixture_loss(
+        historical_weight=0.75,
+        historical_loss=0.2,
+        online_loss=0.8,
+    )
+
+    assert result == pytest.approx(
+        0.35
+    )
+
+
+def test_static_mixture_weight():
+    method = StaticMixture(
+        historical_weight=0.7
+    )
+
+    assert method.historical_weight(
+        shift_signal=0.9
+    ) == pytest.approx(0.7)
+
+
+def test_hedge_moves_weight_toward_better_expert():
+    method = Hedge(
+        learning_rate=2.0,
+        initial_historical_weight=0.5,
+    )
+
+    initial_weight = (
+        method.historical_weight()
+    )
+
+    # Historical expert is consistently better.
+    for _ in range(5):
+        method.observe(
+            historical_loss=0.1,
+            online_loss=0.9,
+        )
+
+    final_weight = (
+        method.historical_weight()
+    )
+
+    assert final_weight > initial_weight
+    assert final_weight > 0.5
+
+
+def test_shift_aware_trust_decreases_with_shift():
+    method = ShiftAwareAdaptiveTrust(
+        base_trust=0.8,
+        gamma_shift=3.0,
+        gamma_disadvantage=0.0,
+        beta=0.25,
+    )
+
+    low_shift = (
+        method.historical_weight(
+            shift_signal=0.1
+        )
+    )
+
+    high_shift = (
+        method.historical_weight(
+            shift_signal=0.9
+        )
+    )
+
+    assert high_shift < low_shift
+
+
+def test_shift_aware_trust_responds_to_relative_loss():
+    method = ShiftAwareAdaptiveTrust(
+        base_trust=0.8,
+        gamma_shift=0.0,
+        gamma_disadvantage=3.0,
+        beta=0.5,
+    )
+
+    initial = (
+        method.historical_weight()
+    )
+
+    # Historical expert performs worse.
+    for _ in range(4):
+        method.observe(
+            historical_loss=0.9,
+            online_loss=0.1,
+        )
+
+    degraded = (
+        method.historical_weight()
+    )
+
+    assert degraded < initial
+
+
+def test_online_expert_updates_recent_preference():
+    known_mask = np.array(
+        [True, True, True]
+    )
+
+    popularity = np.array(
+        [10.0, 5.0, 1.0]
+    )
+
+    expert = (
+        ExponentialDecayOnlineExpert(
+            known_item_mask=known_mask,
+            popularity_scores=popularity,
+            decay=0.5,
+            prior_strength=1.0,
+        )
+    )
+
+    initial_top = expert.recommend(
+        k=1
+    )
+
+    assert initial_top[0] == 0
+
+    expert.update(
+        {
+            2: 100,
+        }
+    )
+
+    updated_top = expert.recommend(
+        k=1
+    )
+
+    assert updated_top[0] == 2

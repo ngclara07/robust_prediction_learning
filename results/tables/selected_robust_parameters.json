@@ -1,0 +1,24 @@
+{
+  "static": {
+    "historical_weight": 0.25
+  },
+  "static_selected_name": "Static_alpha_0.25",
+  "static_validation_loss": 0.7213548319623055,
+  "hedge": {
+    "learning_rate": 2.0,
+    "initial_historical_weight": 0.5
+  },
+  "hedge_selected_name": "Hedge_eta_2.00",
+  "hedge_validation_loss": 0.7029710702487636,
+  "shift": {
+    "base_trust": 0.75,
+    "gamma_shift": 2.0,
+    "gamma_disadvantage": 2.0,
+    "beta": 0.25
+  },
+  "shift_selected_name": "ShiftAware_2",
+  "shift_validation_loss": 0.7689310098750358,
+  "window_size": 250,
+  "online_decay": 0.8,
+  "ranking_k": 20
+}
