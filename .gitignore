@@ -23,3 +23,18 @@ Thumbs.db
 # Python package build metadata
 src/*.egg-info/
 *.egg-info/
+
+# Added the LaTex temporary files 
+@"
+
+# LaTeX build artifacts
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+paper/*.toc
+paper/*.synctex.gz
+paper/*.fls
+paper/*.fdb_latexmk
+"@ | Add-Content .gitignore
