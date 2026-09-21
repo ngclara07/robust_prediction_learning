@@ -1,0 +1,11 @@
+{
+  "raw_interactions": 19098853,
+  "processed_interactions": 18521447,
+  "users": 966,
+  "artists": 41045,
+  "earliest_timestamp": "2005-02-14 00:00:07+00:00",
+  "latest_timestamp": "2013-09-29 18:32:04+00:00",
+  "train_interactions": 12964572,
+  "validation_interactions": 1852070,
+  "test_interactions": 3704805
+}

@@ -1,0 +1,25 @@
+# Virtual environment
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Raw / processed datasets
+data/raw/*
+data/processed/*
+
+# Keep directories if desired
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Python package build metadata
+src/*.egg-info/
+*.egg-info/

@@ -1,0 +1,13 @@
+{
+  "selection_metric": "ndcg_at_20",
+  "selected_parameters": {
+    "n_factors": 64,
+    "learning_rate": 0.05,
+    "regularization": 0.005,
+    "epochs": 5,
+    "batch_size": 8192,
+    "max_samples_per_epoch": 500000
+  },
+  "validation_ndcg": 0.06056195185317448,
+  "quick_mode": false
+}
