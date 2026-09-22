@@ -38,3 +38,4 @@ paper/*.synctex.gz
 paper/*.fls
 paper/*.fdb_latexmk
 "@ | Add-Content .gitignore
+paper/main.pdf
